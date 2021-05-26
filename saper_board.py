@@ -2,29 +2,28 @@ from tkinter import *
 from tkinter import messagebox as mbox
 import json
 from saper import Dict
-URL = {"Board": "/home/emili/paragony/pipr-notes/PIPR/Saper/board.json"}
+URL = {"Board": "/home/lucky/pipr/sem2/board.json"}
 
 
-class Game(Dict):
+class Game:
     def __init__(self, root, wiersze, kolumny, bomby):
         self._wiersze = wiersze
         self._kolumny = kolumny
         self._bomby = bomby
         self._root = root
         self._flags = 0
-        with open(URL["Board"], "r") as file_with_board:
-            self._board = json.load(file_with_board)
         self._images = {
-                "plain": PhotoImage(file="/home/emili/paragony/pipr-notes/PIPR/Saper/plain.png"),
-                "blank": PhotoImage(file="/home/emili/paragony/pipr-notes/PIPR/Saper/blank.png"),
-                "mine": PhotoImage(file="/home/emili/paragony/pipr-notes/PIPR/Saper/mine1.gif"),
-                "flag": PhotoImage(file="/home/emili/paragony/pipr-notes/PIPR/Saper/flag.png"),
-                "numbers": [PhotoImage(file="/home/emili/paragony/pipr-notes/PIPR/Saper/"+str(i)+".png") for i in range(1, 9)]
+                "plain": PhotoImage(file="plain.png"),
+                "blank": PhotoImage(file="blank.png"),
+                "mine": PhotoImage(file="mine1.gif"),
+                "flag": PhotoImage(file="flag.png"),
+                "numbers": [PhotoImage(file=str(i)+".png") for i in range(1, 9)]
                 }
         self._frame = Frame(self._root)
         self._frame.pack()
 
     def board(self):
+        self.new_board()
         self._tiles = {}
         for x in range(0, self._wiersze):
             for y in range(0, self._kolumny):
@@ -117,6 +116,11 @@ class Game(Dict):
                     return
         self.game_over(True)
 
+    def new_board(self):
+        Dict(self._wiersze, self._kolumny, self._bomby)
+        with open(URL["Board"], "r") as file_with_board:
+            self._board = json.load(file_with_board)
+
     def game_over(self, result):
         if result is True:
             answer = mbox.askyesno("Game Over", "Congrats! You won")
@@ -125,6 +129,7 @@ class Game(Dict):
         if answer is False:
             quit()
         else:
+            self.new_board()
             self.board()
 
 
@@ -132,12 +137,10 @@ def main():
     wiersze = 10
     kolumny = 10
     bomby = 7
-    Dict(wiersze, kolumny, bomby)
     window = Tk()
     game = Game(window, wiersze, kolumny, bomby)
     game.board()
     window.mainloop()
-
 
 if __name__ == "__main__":
     main()
