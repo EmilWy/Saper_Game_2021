@@ -22,6 +22,9 @@ class Game:
         self._frame = Frame(self._root)
         self._frame.pack()
 
+    def load_game(self):
+        pass
+
     def board(self):
         self.new_board()
         self._tiles = {}
@@ -46,10 +49,10 @@ class Game:
         tile = self._tiles[x][y]
         if tile["state"] == 0:
             if 0 < tile["value"] <= 8:
-                tile["cover"].config(image = self._images["numbers"][tile["value"]-1])
+                tile["cover"].config(image=self._images["numbers"][tile["value"]-1])
                 tile["state"] = 1
             else:
-                tile["cover"].config(image = self._images["blank"])
+                tile["cover"].config(image=self._images["blank"])
                 tile["state"] = 1
                 if x > 0:
                     self.uncover(x-1, y)
@@ -60,7 +63,7 @@ class Game:
                 if y < self._kolumny - 1:
                     self.uncover(x, y+1)
                 if x > 0 and y > 0:
-                    self.uncover(x-1,y-1)
+                    self.uncover(x-1, y-1)
                 if x > 0 and y < self._kolumny - 1:
                     self.uncover(x-1, y+1)
                 if x < self._wiersze - 1 and y > 0:
@@ -90,7 +93,12 @@ class Game:
     def left_click_action(self, tile):
         if tile["state"] == 0:
             if tile["value"] == 11:
-                tile["cover"].config(image = self._images["mine"])
+                tile["cover"].config(image=self._images["mine"])
+                for x in range(0, self._wiersze):
+                    for y in range(0, self._kolumny):
+                        tile = self._tiles[x][y]
+                        if tile["value"] == 11:
+                            tile["cover"].config(image=self._images["mine"])
                 self.game_over(False)
                 return
             else:
@@ -129,7 +137,6 @@ class Game:
         if answer is False:
             quit()
         else:
-            self.new_board()
             self.board()
 
 
@@ -141,6 +148,7 @@ def main():
     game = Game(window, wiersze, kolumny, bomby)
     game.board()
     window.mainloop()
+
 
 if __name__ == "__main__":
     main()
