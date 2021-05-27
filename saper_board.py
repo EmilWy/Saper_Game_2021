@@ -1,8 +1,13 @@
 from tkinter import *
 from tkinter import messagebox as mbox
+from tkinter.filedialog import asksaveasfile
 import json
 from saper import Dict
-URL = {"Board": "/home/lucky/pipr/sem2/board.json"}
+URL = {
+    "Board": "/home/lucky/pipr/sem2/minesweeper/board.json",
+    "saved": "/home/lucky/pipr/sem2/minesweeper/saved.json",
+    "last_game": "/home/lucky/pipr/sem2/minesweeper/last_game.json"
+    }
 
 
 class Game:
@@ -23,7 +28,27 @@ class Game:
         self._frame.pack()
 
     def load_game(self):
-        pass
+        self._tiles = {}
+        with open(URL["saved"], "r") as file_with_board:
+            tiles = json.load(file_with_board)
+        for x in range(0, self._wiersze):
+            for y in range(0, self._kolumny):
+                if y == 0:
+                    self._tiles[x] = {}
+                tile = tiles[str(x)][str(y)]
+                tile["cover"] = Button(self._frame, image=self._images["plain"])
+                if tile["state"] == 1:
+                    tile["cover"].config(image=self._images["numbers"][tile["value"]-1])
+                if tile["state"] == 2:
+                    tile["cover"].config(image=self._images["flag"])
+                if tile["value"] == 0 and tile["state"] == 1:
+                    tile["cover"].config(image=self._images["blank"])
+                tile["cover"].bind("<Button-1>", self.left_click(x, y))
+                tile["cover"].bind("<Button-3>", self.right_click(x, y))
+                tile["cover"].grid(row=x, column=y)
+                self._tiles[x][y] = tile
+        with open(URL["last_game"], "r") as file_with_board:
+            self._board = json.load(file_with_board)
 
     def board(self):
         self.new_board()
@@ -92,12 +117,12 @@ class Game:
 
     def left_click_action(self, tile):
         if tile["state"] == 0:
-            if tile["value"] == 11:
+            if tile["value"] == 9:
                 tile["cover"].config(image=self._images["mine"])
                 for x in range(0, self._wiersze):
                     for y in range(0, self._kolumny):
                         tile = self._tiles[x][y]
-                        if tile["value"] == 11:
+                        if tile["value"] == 9:
                             tile["cover"].config(image=self._images["mine"])
                 self.game_over(False)
                 return
@@ -112,7 +137,7 @@ class Game:
             for x in range(0, self._wiersze):
                 for y in range(0, self._kolumny):
                     tile = self._tiles[x][y]
-                    if tile["state"] == 2 and tile["value"] != 11:
+                    if tile["state"] == 2 and tile["value"] != 9:
                         return
             self.game_over(True)
 
@@ -120,7 +145,7 @@ class Game:
         for x in range(0, self._wiersze):
             for y in range(0, self._kolumny):
                 tile = self._tiles[x][y]
-                if tile["state"] == 0 and tile["value"] != 11:
+                if tile["state"] == 0 and tile["value"] != 9:
                     return
         self.game_over(True)
 
@@ -139,6 +164,22 @@ class Game:
         else:
             self.board()
 
+    def file_save(self):
+        board = self._tiles
+        for x in range(0, self._wiersze):
+            for y in range(0, self._kolumny):
+                board[x][y].pop("cover")
+        with open(URL["saved"], "w") as file_with_board:
+            json.dump(board, file_with_board)
+        with open(URL["last_game"], "w") as file_with_board:
+            json.dump(self._board, file_with_board)
+
+    def close(self):
+        if mbox.askyesno('QUIT', "Are you sure you want to leave?\nIf so you can save your progress"):
+            if mbox.askyesno('Save', "Do you want to save game?"):
+                self.file_save()
+            self._root.destroy()
+
 
 def main():
     wiersze = 10
@@ -146,7 +187,11 @@ def main():
     bomby = 7
     window = Tk()
     game = Game(window, wiersze, kolumny, bomby)
-    game.board()
+    window.protocol('WM_DELETE_WINDOW', game.close)
+    if mbox.askyesno('New Game', "Do you want to load last game?"):
+        game.load_game()
+    else:
+        game.board()
     window.mainloop()
 
 
