@@ -182,16 +182,20 @@ class Game:
 
 
 def main():
-    wiersze = 10
-    kolumny = 10
+    wiersze = 20
+    kolumny = 20
     bomby = 7
+    h = wiersze * 26
+    w = kolumny * 26
     window = Tk()
+    window.geometry(str(h)+'x'+str(w))
     game = Game(window, wiersze, kolumny, bomby)
     window.protocol('WM_DELETE_WINDOW', game.close)
     if mbox.askyesno('New Game', "Do you want to load last game?"):
         game.load_game()
     else:
         game.board()
+    game.board()
     window.mainloop()
 
 
