@@ -24,17 +24,6 @@ class TestDict():
         value_in_0x0 = mapa.find_cell(0, 0)
         assert value_in_0x0 == 1
 
-    def test_change_cell(self):
-        mapa = Dict(wiersze3x3, kolumny3x3, bomny3x3, mapa_raw3x3)
-        mapa.change_cell(0, 0, 3)
-        mapa.change_cell(2, 2, 6)
-        mapa_sasiedzi = {
-            0: [3, 1, 0],
-            1: [11, 1, 0],
-            2: [1, 1, 6]
-            }
-        assert mapa._map == mapa_sasiedzi
-
     def test_sasiedzi(self):
         mapa = Dict(wiersze3x3, kolumny3x3, bomny3x3, mapa_raw3x3)
         mapa_sasiedzi = {
@@ -43,6 +32,17 @@ class TestDict():
             2: [1, 1, 0]
             }
         assert mapa._map == mapa_sasiedzi
+
+    def test_change_cell(self):
+        mapa = Dict(wiersze3x3, kolumny3x3, bomny3x3, mapa_raw3x3)
+        mapa.change_cell(0, 0, 3)
+        mapa.change_cell(2, 2, 6)
+        mapa_ = {
+            0: [3, 1, 0],
+            1: [11, 1, 0],
+            2: [1, 1, 6]
+            }
+        assert mapa._map == mapa_
 
 
 class TestPlayBoard():
