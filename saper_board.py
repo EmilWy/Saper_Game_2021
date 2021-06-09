@@ -161,9 +161,9 @@ class Game:
 
     def game_over(self, result):
         if result is True:
-            answer = mbox.askyesno("Game Over", "Congrats! You won")
+            answer = mbox.askyesno("Game Over", "Congrats! You won\nDo you want to play again?")
         else:
-            answer = mbox.askyesno("Game Over", "Sorry, maybe next time")
+            answer = mbox.askyesno("Game Over", "Sorry, maybe next time\nDo you want to play again?")
         if answer is False:
             quit()
         else:
