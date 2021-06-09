@@ -5,7 +5,7 @@ URL = {
     "Play_Board": "/home/emili/paragony/pipr-notes/PIPR/Saper/play_board.json"
     }
 
-oznaczenie_bomb = 11
+oznaczenie_bomb = 9
 
 
 class Dict:
