@@ -1,4 +1,5 @@
 from saper import Dict, Play_board
+import pytest
 
 mapa_raw3x3 = {
             0: [0, 0, 0],
@@ -231,8 +232,9 @@ class TestPlayBoard():
         assert mapa_new_C == mapa_new._new_board
         assert mapa_new._outcome is True
         assert mapa_new._win is True
+        assert mapa_new._usedF == mapa_new._bomby
 
-    def test_win_only_miny(self):
+    def test_win_only_missed_mines(self):
         Dict(wiersze2x2, kolumny2x2, bomny2x2, mapa_raw2x2)
         mapa_new = Play_board(wiersze2x2, kolumny2x2, bomny2x2, lista_obrazkow)
         mapa_new.click("l", 1, 1)
@@ -244,3 +246,34 @@ class TestPlayBoard():
         assert mapa_new_C == mapa_new._new_board
         assert mapa_new._outcome is True
         assert mapa_new._win is True
+
+    def test_typical_errors(self):
+        with pytest.raises(KeyError):
+            Dict(-1, kolumny2x2, bomny2x2)
+        with pytest.raises(KeyError):
+            Play_board(wiersze2x2, -2, bomny2x2, lista_obrazkow)
+        raw_map = Dict(wiersze2x2, kolumny2x2, 6)
+        assert raw_map._bomby <= 4
+
+    def test_odkryj_puste(self):
+        Dict(wiersze2x2, kolumny2x2, 0)
+        My_play = Play_board(wiersze2x2, kolumny2x2, 0, lista_obrazkow)
+        My_play.odkryj_puste(0, 0)
+        mapa_new = {
+            "0": [" ", " "],
+            "1": [" ", " "],
+        }
+        assert mapa_new == My_play._new_board
+        assert My_play._win is True
+
+    def test_odkryj_bomby(self):
+        Dict(wiersze2x2, kolumny2x2, bomny2x2, mapa_raw2x2)
+        My_play = Play_board(wiersze2x2, kolumny2x2, bomny2x2, lista_obrazkow)
+        My_play.show_bombs()
+        mapa_new = {
+            "0": ["X", "B"],
+            "1": ["B", "X"],
+        }
+        assert mapa_new == My_play._new_board
+        assert My_play._win is False
+        assert My_play._usedF == 0
