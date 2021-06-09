@@ -2,6 +2,9 @@ from tkinter import *
 from tkinter import messagebox as mbox
 import json
 from saper import Dict
+import os.path
+
+
 URL = {
     "Board": "/home/lucky/pipr/sem2/minesweeper/board.json",
     "saved": "/home/lucky/pipr/sem2/minesweeper/saved.json",
@@ -27,27 +30,30 @@ class Game:
         self._frame.pack()
 
     def load_game(self):
-        self._tiles = {}
-        with open(URL["saved"], "r") as file_with_board:
-            tiles = json.load(file_with_board)
-        for x in range(0, self._wiersze):
-            for y in range(0, self._kolumny):
-                if y == 0:
-                    self._tiles[x] = {}
-                tile = tiles[str(x)][str(y)]
-                tile["cover"] = Button(self._frame, image=self._images["plain"])
-                if tile["state"] == 1:
-                    tile["cover"].config(image=self._images["numbers"][tile["value"]-1])
-                if tile["state"] == 2:
-                    tile["cover"].config(image=self._images["flag"])
-                if tile["value"] == 0 and tile["state"] == 1:
-                    tile["cover"].config(image=self._images["blank"])
-                tile["cover"].bind("<Button-1>", self.left_click(x, y))
-                tile["cover"].bind("<Button-3>", self.right_click(x, y))
-                tile["cover"].grid(row=x, column=y)
-                self._tiles[x][y] = tile
-        with open(URL["last_game"], "r") as file_with_board:
-            self._board = json.load(file_with_board)
+        if os.path.isfile(URL["saved"]):
+            self._tiles = {}
+            with open(URL["saved"], "r") as file_with_board:
+                tiles = json.load(file_with_board)
+            for x in range(0, self._wiersze):
+                for y in range(0, self._kolumny):
+                    if y == 0:
+                        self._tiles[x] = {}
+                    tile = tiles[str(x)][str(y)]
+                    tile["cover"] = Button(self._frame, image=self._images["plain"])
+                    if tile["state"] == 1:
+                        tile["cover"].config(image=self._images["numbers"][tile["value"]-1])
+                    if tile["state"] == 2:
+                        tile["cover"].config(image=self._images["flag"])
+                    if tile["value"] == 0 and tile["state"] == 1:
+                        tile["cover"].config(image=self._images["blank"])
+                    tile["cover"].bind("<Button-1>", self.left_click(x, y))
+                    tile["cover"].bind("<Button-3>", self.right_click(x, y))
+                    tile["cover"].grid(row=x, column=y)
+                    self._tiles[x][y] = tile
+            with open(URL["last_game"], "r") as file_with_board:
+                self._board = json.load(file_with_board)
+        else:
+            self.board()
 
     def board(self):
         self.new_board()
