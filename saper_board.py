@@ -1,6 +1,5 @@
 from tkinter import *
 from tkinter import messagebox as mbox
-from tkinter.filedialog import asksaveasfile
 import json
 from saper import Dict
 URL = {
@@ -182,8 +181,8 @@ class Game:
 
 
 def main():
-    wiersze = 20
-    kolumny = 20
+    wiersze = 7
+    kolumny = 7
     bomby = 7
     h = wiersze * 26
     w = kolumny * 26
@@ -195,7 +194,6 @@ def main():
         game.load_game()
     else:
         game.board()
-    game.board()
     window.mainloop()
 
 
