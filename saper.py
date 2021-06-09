@@ -1,6 +1,5 @@
 import random
 import json
-from tkinter.constants import NONE
 URL = {
     "Board": "/home/emili/paragony/pipr-notes/PIPR/Saper/board.json",
     "Play_Board": "/home/emili/paragony/pipr-notes/PIPR/Saper/play_board.json"
@@ -10,10 +9,15 @@ oznaczenie_bomb = 11
 
 
 class Dict:
-    def __init__(self, wiersz, koluma, bomby, mapa=None):
+    def __init__(self, wiersz, kolumna, bomby, mapa=None):
         self._wiersz = wiersz
-        self._koluma = koluma
-        self._bomby = bomby
+        self._koluma = kolumna
+        if (wiersz or kolumna) <= 0:
+            raise KeyError
+        if bomby <= wiersz*kolumna:
+            self._bomby = bomby
+        else:
+            self._bomby = random.randint(0, kolumna*wiersz)
         if not mapa:
             self._map = self.make_d()
         else:
@@ -71,8 +75,12 @@ class Dict:
 
 
 class Play_board:
-    def __init__(self, wiersz, kolumna, bomby, lista_o=None):
-        self.lista_obrazkow = lista_o
+    def __init__(self, wiersz, kolumna, bomby, lista_o=None, New_game=True):
+        if (wiersz or kolumna) <= 0:
+            raise KeyError
+        if bomby <= wiersz*kolumna:
+            self._bomby = bomby
+        self.lista_ob = lista_o
         self._outcome = False
         self._wiersz = wiersz
         self._koluma = kolumna
@@ -81,9 +89,14 @@ class Play_board:
         self._win = None
         with open(URL["Board"], "r") as file_with_board:
             self._board = json.load(file_with_board)
-        self.make_play_board()
+        if New_game:
+            self.make_play_board()
         with open(URL["Play_Board"], "r") as file_with_play_board:
             self._new_board = json.load(file_with_play_board)
+
+    def print_raw_map_raw(self):
+        for w in range(0, self._wiersz):
+            print(str(self._board[str(w)]))
 
     def print_map_raw(self):
         for w in range(0, self._wiersz):
@@ -107,7 +120,7 @@ class Play_board:
         for i in range(0, self._wiersz):
             wiersze = []
             for j in range(0, self._koluma):
-                wiersze.append(self.lista_obrazkow[11])
+                wiersze.append(self.lista_ob[11])
             new_board[i] = wiersze
         with open(URL["Play_Board"], "w") as file_with_board:
             json.dump(new_board, file_with_board)
@@ -124,49 +137,49 @@ class Play_board:
             self.you_win()
 
     def left_click(self, wiersz, kolumna):
-        wart_na_miejscu = self.check_cell(wiersz, kolumna)
+        wartosc = self.check_cell(wiersz, kolumna)
         wart_na_new = self.check_cell_on_new(wiersz, kolumna)
-        if wart_na_new != self.lista_obrazkow[10]:
-            if wart_na_miejscu == oznaczenie_bomb:
+        if wart_na_new != self.lista_ob[10]:
+            if wartosc == oznaczenie_bomb:
                 self._outcome = True
                 self.show_bombs()
-            if wart_na_miejscu in range(1, 9):
-                self.change_cell(wiersz, kolumna, self.lista_obrazkow[wart_na_miejscu])
-            if wart_na_miejscu == 0:
+            if wartosc in range(1, 9):
+                self.change_cell(wiersz, kolumna, self.lista_ob[wartosc])
+            if wartosc == 0:
                 self.odkryj_puste(wiersz, kolumna)
 
     def right_click(self, wiersz, kolumna):
         wartosc_na_miejscu_new = self.check_cell_on_new(wiersz, kolumna)
-        if wartosc_na_miejscu_new == self.lista_obrazkow[11]:
-            self.change_cell(wiersz, kolumna, self.lista_obrazkow[10])
+        if wartosc_na_miejscu_new == self.lista_ob[11]:
+            self.change_cell(wiersz, kolumna, self.lista_ob[10])
             self._usedF += 1
-        if wartosc_na_miejscu_new == self.lista_obrazkow[10]:
-            self.change_cell(wiersz, kolumna, self.lista_obrazkow[11])
+        if wartosc_na_miejscu_new == self.lista_ob[10]:
+            self.change_cell(wiersz, kolumna, self.lista_ob[11])
             self._usedF -= 1
 
     def show_bombs(self):
         for i in range(0, self._wiersz):
             for j in range(0, self._koluma):
                 if self.check_cell(i, j) == oznaczenie_bomb:
-                    self.change_cell(i, j, self.lista_obrazkow[9])
+                    self.change_cell(i, j, self.lista_ob[9])
         self._win = False
         return
 
     def odkryj_puste(self, wiersz, kolumna):
-        self.change_cell(wiersz, kolumna, self.lista_obrazkow[0])
+        self.change_cell(wiersz, kolumna, self.lista_ob[0])
         for i in range(self._koluma*self._wiersz):
             for i in range(0, self._wiersz):
                 for j in range(0, self._koluma):
                     for a in range(-1, 2):
                         for b in range(-1, 2):
-                            if self.check_cell_on_new(i+a, j+b) == self.lista_obrazkow[0]:
-                                wartosc_na_miejscu = self.check_cell(i, j)
-                                wartosc_na_miejscu_new = self.check_cell_on_new(i, j)
-                                if wartosc_na_miejscu_new != self.lista_obrazkow[10]:
-                                    if wartosc_na_miejscu == 0:
-                                        self.change_cell(i, j, self.lista_obrazkow[0])
+                            if self.check_cell_on_new(i+a, j+b) == self.lista_ob[0]:
+                                wartosc = self.check_cell(i, j)
+                                wartosc_na_new = self.check_cell_on_new(i, j)
+                                if wartosc_na_new != self.lista_ob[10]:
+                                    if wartosc == 0:
+                                        self.change_cell(i, j, self.lista_ob[0])
                                     else:
-                                        self.change_cell(i, j, self.lista_obrazkow[wartosc_na_miejscu])
+                                        self.change_cell(i, j, self.lista_ob[wartosc])
         return
 
     def you_win(self):
@@ -175,9 +188,9 @@ class Play_board:
             for j in range(0, self._koluma):
                 wartosc_na_miejscu = self.check_cell(i, j)
                 wartosc_new = self.check_cell_on_new(i, j)
-                if wartosc_na_miejscu != oznaczenie_bomb and wartosc_new == self.lista_obrazkow[10]:
+                if wartosc_na_miejscu != oznaczenie_bomb and wartosc_new == self.lista_ob[10]:
                     self._outcome = False
-                elif wartosc_na_miejscu != oznaczenie_bomb and wartosc_new == self.lista_obrazkow[11]:
+                elif wartosc_na_miejscu != oznaczenie_bomb and wartosc_new == self.lista_ob[11]:
                     self._outcome = False
         if self._outcome is True:
             self._win = True
@@ -189,9 +202,13 @@ def main():
     wiersze = 3
     kolumny = 3
     bomny = 1
-    mapa = Dict(wiersze, kolumny, bomny)
-    mapa.print_map_raw()
-    a = Play_board(wiersze, kolumny, bomny, lista_obrazkow)
+    new_game = input("New_game?")
+    if new_game == '1':
+        mapa = Dict(wiersze, kolumny, bomny)
+        a = Play_board(wiersze, kolumny, bomny, lista_obrazkow)
+    else:
+        a = Play_board(wiersze, kolumny, bomny, lista_obrazkow, False)
+    a.print_raw_map_raw()
     a.print_map_raw()
     while a._outcome is False:
         myszka = input("myszka: ")
@@ -210,4 +227,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
