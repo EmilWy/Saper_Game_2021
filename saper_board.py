@@ -1,5 +1,6 @@
 from tkinter import *
 from tkinter import messagebox as mbox
+from tkinter import filedialog
 import json
 from saper import Dict
 import os.path
@@ -7,16 +8,11 @@ import os.path
 
 URL = {
     "Board": "/home/lucky/pipr/sem2/minesweeper/board.json",
-    "saved": "/home/lucky/pipr/sem2/minesweeper/saved.json",
-    "last_game": "/home/lucky/pipr/sem2/minesweeper/last_game.json"
     }
 
 
 class Game:
-    def __init__(self, root, wiersze, kolumny, bomby):
-        self._wiersze = wiersze
-        self._kolumny = kolumny
-        self._bomby = bomby
+    def __init__(self, root):
         self._root = root
         self._flags = 0
         self._images = {
@@ -29,31 +25,65 @@ class Game:
         self._frame = Frame(self._root)
         self._frame.pack()
 
-    def load_game(self):
-        if os.path.isfile(URL["saved"]):
-            self._tiles = {}
-            with open(URL["saved"], "r") as file_with_board:
-                tiles = json.load(file_with_board)
-            for x in range(0, self._wiersze):
-                for y in range(0, self._kolumny):
-                    if y == 0:
-                        self._tiles[x] = {}
-                    tile = tiles[str(x)][str(y)]
-                    tile["cover"] = Button(self._frame, image=self._images["plain"])
-                    if tile["state"] == 1:
-                        tile["cover"].config(image=self._images["numbers"][tile["value"]-1])
-                    if tile["state"] == 2:
-                        tile["cover"].config(image=self._images["flag"])
-                    if tile["value"] == 0 and tile["state"] == 1:
-                        tile["cover"].config(image=self._images["blank"])
-                    tile["cover"].bind("<Button-1>", self.left_click(x, y))
-                    tile["cover"].bind("<Button-3>", self.right_click(x, y))
-                    tile["cover"].grid(row=x, column=y)
-                    self._tiles[x][y] = tile
-            with open(URL["last_game"], "r") as file_with_board:
-                self._board = json.load(file_with_board)
+    def parameters(self):
+        rows = StringVar()
+        columns = StringVar()
+        mines = StringVar()
+        Label(self._root, text="Number of rows").pack()
+        Entry(self._root, textvariable=rows).pack()
+        Label(self._root, text="Number of columns").pack()
+        Entry(self._root, textvariable=columns).pack()
+        Label(self._root, text="Number of mines").pack()
+        Entry(self._root, textvariable=mines).pack()
+        button = Button(self._root, text="Enter", command=lambda row=rows, col=columns, mine=mines: self.get_value(row, col, mine))
+        button.pack()
+
+    def get_value(self, row, col, mine):
+        rows = str(row.get())
+        cols = str(col.get())
+        mines = str(mine.get())
+        if rows.isdigit() and cols.isdigit() and mines.isdigit():
+            rows = int(rows)
+            cols = int(cols)
+            mines = int(mines)
+            if 5 <= rows <= 30 and 5 <= cols <= 30 and 5 <= mines < (rows*cols):
+                self._wiersze = rows
+                self._kolumny = cols
+                self._bomby = mines
+                self.board()
+
+    def load_new_game(self):
+        if mbox.askyesno('New Game', "Do you want to load last game?"):
+            self.load_game()
         else:
-            self.board()
+            self.parameters()
+
+    def load_game(self):
+        path = filedialog.askopenfilename(filetypes=[("json files", '*.json')], title="choose file with saved GUI board")
+        path2 = filedialog.askopenfilename(filetypes=[("json files", '*.json')], title="choose file with saved saper board")
+        self._tiles = {}
+        with open(path, "r") as file_with_board:
+            tiles = json.load(file_with_board)
+        self._wiersze = len(tiles)
+        self._kolumny = len(tiles["0"])
+        for x in range(0, self._wiersze):
+            for y in range(0, self._kolumny):
+                if y == 0:
+                    self._tiles[x] = {}
+                tile = tiles[str(x)][str(y)]
+                tile["cover"] = Button(self._frame, image=self._images["plain"])
+                if tile["state"] == 1:
+                    tile["cover"].config(image=self._images["numbers"][tile["value"]-1])
+                if tile["state"] == 2:
+                    tile["cover"].config(image=self._images["flag"])
+                if tile["value"] == 0 and tile["state"] == 1:
+                    tile["cover"].config(image=self._images["blank"])
+                tile["cover"].bind("<Button-1>", self.left_click(x, y))
+                tile["cover"].bind("<Button-3>", self.right_click(x, y))
+                tile["cover"].grid(row=x, column=y)
+                self._tiles[x][y] = tile
+        with open(path2, "r") as file_with_board:
+            self._board = json.load(file_with_board)
 
     def board(self):
         self.new_board()
@@ -174,9 +204,11 @@ class Game:
         for x in range(0, self._wiersze):
             for y in range(0, self._kolumny):
                 board[x][y].pop("cover")
-        with open(URL["saved"], "w") as file_with_board:
+        path = filedialog.asksaveasfilename(defaultextension='.json', filetypes=[("json files", '*.json')], title="choose filename to save GUI board", initialfile="lastGame_GUI")
+        with open(path, "w") as file_with_board:
             json.dump(board, file_with_board)
-        with open(URL["last_game"], "w") as file_with_board:
+        path2 = filedialog.asksaveasfilename(defaultextension='.json', filetypes=[("json files", '*.json')], title="choose filename to save Dict board", initialfile="lastGame_saper")
+        with open(path2, "w") as file_with_board:
             json.dump(self._board, file_with_board)
 
     def close(self):
@@ -185,21 +217,18 @@ class Game:
                 self.file_save()
             self._root.destroy()
 
+    def columns(self):
+        return self._kolumny
+
+    def rows(self):
+        return self._wiersze
+
 
 def main():
-    wiersze = 7
-    kolumny = 7
-    bomby = 7
-    h = wiersze * 26
-    w = kolumny * 26
     window = Tk()
-    window.geometry(str(h)+'x'+str(w))
-    game = Game(window, wiersze, kolumny, bomby)
+    game = Game(window)
+    game.load_new_game()
     window.protocol('WM_DELETE_WINDOW', game.close)
-    if mbox.askyesno('New Game', "Do you want to load last game?"):
-        game.load_game()
-    else:
-        game.board()
     window.mainloop()
 
 
