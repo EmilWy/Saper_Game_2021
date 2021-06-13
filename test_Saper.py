@@ -1,17 +1,24 @@
 from saper import Dict, Play_board
 import pytest
 
+ozn_bomb = 11
+
+URL = {
+    "Board": "board.json",
+    "Play_Board": "play_board.json"
+    }
+
 mapa_raw3x3 = {
-            0: [0, 0, 0],
-            1: [11, 0, 0],
-            2: [0, 0, 0]
+            0: [0,     0,    0],
+            1: [ozn_bomb, 0, 0],
+            2: [0,     0,    0]
             }
 wiersze3x3 = 3
 kolumny3x3 = 3
 bomny3x3 = 1
 mapa_raw2x2 = {
-            0: [0, 11],
-            1: [11, 0]
+            0: [0,        ozn_bomb],
+            1: [ozn_bomb,        0]
             }
 wiersze2x2 = 2
 kolumny2x2 = 2
@@ -21,35 +28,35 @@ lista_obrazkow = [" ", "1", "2", "3", "4", "5", "6", "7", "8", "B", "F", "X"]
 
 class TestDict():
     def test_check_cell(self):
-        mapa = Dict(wiersze3x3, kolumny3x3, bomny3x3, mapa_raw3x3)
+        mapa = Dict(wiersze3x3, kolumny3x3, bomny3x3, URL["Board"], mapa_raw3x3)
         value_in_0x0 = mapa.find_cell(0, 0)
         assert value_in_0x0 == 1
 
     def test_sasiedzi(self):
-        mapa = Dict(wiersze3x3, kolumny3x3, bomny3x3, mapa_raw3x3)
+        mapa = Dict(wiersze3x3, kolumny3x3, bomny3x3, URL["Board"], mapa_raw3x3)
         mapa_sasiedzi = {
-            0: [1, 1, 0],
-            1: [11, 1, 0],
-            2: [1, 1, 0]
+            0: [1,    1,     0],
+            1: [ozn_bomb, 1, 0],
+            2: [1,    1,     0]
             }
         assert mapa._map == mapa_sasiedzi
 
     def test_change_cell(self):
-        mapa = Dict(wiersze3x3, kolumny3x3, bomny3x3, mapa_raw3x3)
+        mapa = Dict(wiersze3x3, kolumny3x3, bomny3x3, URL["Board"], mapa_raw3x3)
         mapa.change_cell(0, 0, 3)
         mapa.change_cell(2, 2, 6)
         mapa_ = {
-            0: [3, 1, 0],
-            1: [11, 1, 0],
-            2: [1, 1, 6]
+            0: [3,     1,    0],
+            1: [ozn_bomb, 1, 0],
+            2: [1,     1,    6]
             }
         assert mapa._map == mapa_
 
 
 class TestPlayBoard():
     def test_check_cell(self):
-        Dict(wiersze3x3, kolumny3x3, bomny3x3, mapa_raw3x3)
-        mapa_new = Play_board(wiersze3x3, kolumny3x3, bomny3x3, lista_obrazkow)
+        Dict(wiersze3x3, kolumny3x3, bomny3x3, URL["Board"], mapa_raw3x3)
+        mapa_new = Play_board(wiersze3x3, kolumny3x3, bomny3x3, URL["Play_Board"], URL["Board"], lista_obrazkow)
         value_in_0x0 = mapa_new.check_cell(0, 0)
         assert value_in_0x0 == 1
         value_in_1x0 = mapa_new.check_cell(1, 0)
@@ -66,8 +73,8 @@ class TestPlayBoard():
         assert mapa_new._new_board == mapa_newA
 
     def test_change_cell(self):
-        Dict(wiersze3x3, kolumny3x3, bomny3x3, mapa_raw3x3)
-        mapa_new = Play_board(wiersze3x3, kolumny3x3, bomny3x3, lista_obrazkow)
+        Dict(wiersze3x3, kolumny3x3, bomny3x3, URL["Board"], mapa_raw3x3)
+        mapa_new = Play_board(wiersze3x3, kolumny3x3, bomny3x3, URL["Play_Board"], URL["Board"], lista_obrazkow)
         mapa_new.change_cell(1, 0, 'A')
         mapa_newA = {
             "0": ["X", "X", "X"],
@@ -77,8 +84,8 @@ class TestPlayBoard():
         assert mapa_new._new_board == mapa_newA
 
     def test_left_click(self):
-        Dict(wiersze3x3, kolumny3x3, bomny3x3, mapa_raw3x3)
-        mapa_new = Play_board(wiersze3x3, kolumny3x3, bomny3x3, lista_obrazkow)
+        Dict(wiersze3x3, kolumny3x3, bomny3x3, URL["Board"], mapa_raw3x3)
+        mapa_new = Play_board(wiersze3x3, kolumny3x3, bomny3x3, URL["Play_Board"], URL["Board"], lista_obrazkow)
         mapa_new.click("l", 0, 0)
         mapa_newA = {
             "0": ["1", "X", "X"],
@@ -107,8 +114,8 @@ class TestPlayBoard():
         assert mapa_new._outcome is True
 
     def test_right_click(self):
-        Dict(wiersze3x3, kolumny3x3, bomny3x3, mapa_raw3x3)
-        mapa_new = Play_board(wiersze3x3, kolumny3x3, bomny3x3, lista_obrazkow)
+        Dict(wiersze3x3, kolumny3x3, bomny3x3, URL["Board"], mapa_raw3x3)
+        mapa_new = Play_board(wiersze3x3, kolumny3x3, bomny3x3, URL["Play_Board"], URL["Board"], lista_obrazkow)
         mapa_new.click("l", 0, 0)
         mapa_newA = {
             "0": ["1", "X", "X"],
@@ -162,8 +169,8 @@ class TestPlayBoard():
         assert mapa_new._win is True
 
     def test_wygrana(self):
-        Dict(wiersze2x2, kolumny2x2, bomny2x2, mapa_raw2x2)
-        mapa_new = Play_board(wiersze2x2, kolumny2x2, bomny2x2, lista_obrazkow)
+        Dict(wiersze2x2, kolumny2x2, bomny2x2, URL["Board"], mapa_raw2x2)
+        mapa_new = Play_board(wiersze2x2, kolumny2x2, bomny2x2, URL["Play_Board"], URL["Board"], lista_obrazkow)
         mapa_new.click("l", 0, 0)
         mapa_new_A = {
             "0": ["2", "X"],
@@ -190,8 +197,8 @@ class TestPlayBoard():
         assert mapa_new._win is True
 
     def test_klikniecie_na_bombe(self):
-        Dict(wiersze2x2, kolumny2x2, bomny2x2, mapa_raw2x2)
-        mapa_new = Play_board(wiersze2x2, kolumny2x2, bomny2x2, lista_obrazkow)
+        Dict(wiersze2x2, kolumny2x2, bomny2x2, URL["Board"], mapa_raw2x2)
+        mapa_new = Play_board(wiersze2x2, kolumny2x2, bomny2x2, URL["Play_Board"], URL["Board"], lista_obrazkow)
         mapa_new.click("p", 0, 1)
         mapa_new_B = {
             "0": ["X", "F"],
@@ -210,8 +217,8 @@ class TestPlayBoard():
         assert mapa_new._win is False
 
     def test_win_only_flagi(self):
-        Dict(wiersze2x2, kolumny2x2, bomny2x2, mapa_raw2x2)
-        mapa_new = Play_board(wiersze2x2, kolumny2x2, bomny2x2, lista_obrazkow)
+        Dict(wiersze2x2, kolumny2x2, bomny2x2, URL["Board"], mapa_raw2x2)
+        mapa_new = Play_board(wiersze2x2, kolumny2x2, bomny2x2, URL["Play_Board"], URL["Board"], lista_obrazkow)
         mapa_new.click("p", 0, 1)
         mapa_new.click("p", 1, 0)
         mapa_new_B = {
@@ -235,8 +242,8 @@ class TestPlayBoard():
         assert mapa_new._usedF == mapa_new._bomby
 
     def test_win_only_missed_mines(self):
-        Dict(wiersze2x2, kolumny2x2, bomny2x2, mapa_raw2x2)
-        mapa_new = Play_board(wiersze2x2, kolumny2x2, bomny2x2, lista_obrazkow)
+        Dict(wiersze2x2, kolumny2x2, bomny2x2, URL["Board"], mapa_raw2x2)
+        mapa_new = Play_board(wiersze2x2, kolumny2x2, bomny2x2, URL["Play_Board"], URL["Board"], lista_obrazkow)
         mapa_new.click("l", 1, 1)
         mapa_new.click("l", 0, 0)
         mapa_new_C = {
@@ -249,15 +256,15 @@ class TestPlayBoard():
 
     def test_typical_errors(self):
         with pytest.raises(KeyError):
-            Dict(-1, kolumny2x2, bomny2x2)
+            Dict(-1, kolumny2x2, bomny2x2, URL["Board"])
         with pytest.raises(KeyError):
-            Play_board(wiersze2x2, -2, bomny2x2, lista_obrazkow)
-        raw_map = Dict(wiersze2x2, kolumny2x2, 6)
+            Play_board(wiersze2x2, -2, bomny2x2, URL["Play_Board"], URL["Board"], lista_obrazkow)
+        raw_map = Dict(wiersze2x2, kolumny2x2, 6, URL["Board"])
         assert raw_map._bomby <= 4
 
     def test_odkryj_puste(self):
-        Dict(wiersze2x2, kolumny2x2, 0)
-        My_play = Play_board(wiersze2x2, kolumny2x2, 0, lista_obrazkow)
+        Dict(wiersze2x2, kolumny2x2, 0, URL["Board"])
+        My_play = Play_board(wiersze2x2, kolumny2x2, 0, URL["Play_Board"], URL["Board"], lista_obrazkow)
         My_play.odkryj_puste(0, 0)
         mapa_new = {
             "0": [" ", " "],
@@ -267,8 +274,8 @@ class TestPlayBoard():
         assert My_play._win is True
 
     def test_odkryj_bomby(self):
-        Dict(wiersze2x2, kolumny2x2, bomny2x2, mapa_raw2x2)
-        My_play = Play_board(wiersze2x2, kolumny2x2, bomny2x2, lista_obrazkow)
+        Dict(wiersze2x2, kolumny2x2, bomny2x2, URL["Board"], mapa_raw2x2)
+        My_play = Play_board(wiersze2x2, kolumny2x2, bomny2x2, URL["Play_Board"], URL["Board"], lista_obrazkow)
         My_play.show_bombs()
         mapa_new = {
             "0": ["X", "B"],
