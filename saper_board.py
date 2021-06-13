@@ -52,7 +52,6 @@ class Game:
                 self.board()
                 self._root.geometry(str(26*self._kolumny)+"x"+str(26*self._wiersze))
 
-
     def load_new_game(self):
         if mbox.askyesno('New Game', "Do you want to load last game?"):
             self.load_game()
@@ -188,7 +187,7 @@ class Game:
 
     def new_board(self):
         Dict(self._wiersze, self._kolumny, self._bomby)
-        path = filedialog.askopenfilename(filetypes=[("json files", '*.json')], title="choose json file with created MyDict type board")
+        path = filedialog.askopenfilename(filetypes=[("json files", '*.json')], title="choose 'board.json' file with created MyDict type board")
         with open(path, "r") as file_with_board:
             self._board = json.load(file_with_board)
 
