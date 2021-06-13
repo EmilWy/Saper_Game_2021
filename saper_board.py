@@ -56,7 +56,7 @@ class Game:
     def load_new_game(self):
         if mbox.askyesno('New Game', "Do you want to load last game?"):
             self.load_game()
-            self._root.geometry(str(26*self._wiersze)+"x"+str(26*self._kolumny))
+            self._root.geometry(str(26*self._kolumny)+"x"+str(26*self._wiersze))
         else:
             self.parameters()
 
