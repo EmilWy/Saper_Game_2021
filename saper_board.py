@@ -6,13 +6,11 @@ from saper import Dict
 import os.path
 
 
-URL = {
-    "Board": "/home/lucky/pipr/sem2/minesweeper/board.json",
-    }
-
-
 class Game:
     def __init__(self, root):
+        self._wiersze = 0
+        self._kolumny = 0
+        self._bomby = 0
         self._root = root
         self._flags = 0
         self._images = {
@@ -30,13 +28,14 @@ class Game:
         columns = StringVar()
         mines = StringVar()
         Label(self._root, text="Number of rows").pack()
-        Entry(self._root, textvariable=rows).pack()
+        entry1 = Entry(self._root, textvariable=rows).pack()
         Label(self._root, text="Number of columns").pack()
-        Entry(self._root, textvariable=columns).pack()
+        entry2 = Entry(self._root, textvariable=columns).pack()
         Label(self._root, text="Number of mines").pack()
-        Entry(self._root, textvariable=mines).pack()
+        entry3 = Entry(self._root, textvariable=mines).pack()
         button = Button(self._root, text="Enter", command=lambda row=rows, col=columns, mine=mines: self.get_value(row, col, mine))
         button.pack()
+
 
     def get_value(self, row, col, mine):
         rows = str(row.get())
@@ -51,10 +50,13 @@ class Game:
                 self._kolumny = cols
                 self._bomby = mines
                 self.board()
+                self._root.geometry(str(26*self._kolumny)+"x"+str(26*self._wiersze))
+
 
     def load_new_game(self):
         if mbox.askyesno('New Game', "Do you want to load last game?"):
             self.load_game()
+            self._root.geometry(str(26*self._wiersze)+"x"+str(26*self._kolumny))
         else:
             self.parameters()
 
@@ -186,7 +188,8 @@ class Game:
 
     def new_board(self):
         Dict(self._wiersze, self._kolumny, self._bomby)
-        with open(URL["Board"], "r") as file_with_board:
+        path = filedialog.askopenfilename(filetypes=[("json files", '*.json')], title="choose json file with created MyDict type board")
+        with open(path, "r") as file_with_board:
             self._board = json.load(file_with_board)
 
     def game_over(self, result):
