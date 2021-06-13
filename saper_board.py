@@ -3,14 +3,10 @@ from tkinter import messagebox as mbox
 from tkinter import filedialog
 import json
 from saper import Dict
-import os.path
 
 
 class Game:
     def __init__(self, root):
-        self._wiersze = 0
-        self._kolumny = 0
-        self._bomby = 0
         self._root = root
         self._flags = 0
         self._images = {
@@ -35,7 +31,6 @@ class Game:
         entry3 = Entry(self._root, textvariable=mines).pack()
         button = Button(self._root, text="Enter", command=lambda row=rows, col=columns, mine=mines: self.get_value(row, col, mine))
         button.pack()
-
 
     def get_value(self, row, col, mine):
         rows = str(row.get())
@@ -67,11 +62,14 @@ class Game:
             tiles = json.load(file_with_board)
         self._wiersze = len(tiles)
         self._kolumny = len(tiles["0"])
+        self._bomby = 0
         for x in range(0, self._wiersze):
             for y in range(0, self._kolumny):
                 if y == 0:
                     self._tiles[x] = {}
                 tile = tiles[str(x)][str(y)]
+                if tile["value"] == 1:
+                    self._bomby += 1
                 tile["cover"] = Button(self._frame, image=self._images["plain"])
                 if tile["state"] == 1:
                     tile["cover"].config(image=self._images["numbers"][tile["value"]-1])
@@ -218,12 +216,6 @@ class Game:
             if mbox.askyesno('Save', "Do you want to save game?"):
                 self.file_save()
             self._root.destroy()
-
-    def columns(self):
-        return self._kolumny
-
-    def rows(self):
-        return self._wiersze
 
 
 def main():
