@@ -1,20 +1,18 @@
 import random
 import json
-URL = {
-    "Board": "/home/emili/paragony/pipr-notes/PIPR/Saper/board.json",
-    "Play_Board": "/home/emili/paragony/pipr-notes/PIPR/Saper/play_board.json"
-    }
 
-oznaczenie_bomb = 9
+oznaczenie_bomb = 11
+max_bard_size = 25
 
 
 class Dict:
-    def __init__(self, wiersz, kolumna, bomby, mapa=None):
+    def __init__(self, wiersz, kolumna, bomby, plik_z_danymi, mapa=None):
         self._wiersz = wiersz
         self._koluma = kolumna
-        if (wiersz or kolumna) <= 0:
+        self._plik_z_danymi = plik_z_danymi
+        if wiersz <= 0 or kolumna <= 0 or wiersz > max_bard_size or kolumna > max_bard_size:
             raise KeyError
-        if bomby <= wiersz*kolumna:
+        if bomby <= wiersz*kolumna and bomby >= 0:
             self._bomby = bomby
         else:
             self._bomby = random.randint(0, kolumna*wiersz)
@@ -23,7 +21,7 @@ class Dict:
         else:
             self._map = mapa
         self.neighbours()
-        with open(URL["Board"], "w") as file_with_board:
+        with open(self._plik_z_danymi, "w") as file_with_board:
             json.dump(self._map, file_with_board)
         file_with_board.close()
 
@@ -75,11 +73,9 @@ class Dict:
 
 
 class Play_board:
-    def __init__(self, wiersz, kolumna, bomby, lista_o=None, New_game=True):
-        if (wiersz or kolumna) <= 0:
+    def __init__(self, wiersz, kolumna, bomby, plik_z_plansza, plik_z_danymi, lista_o=None, New_game=True):
+        if wiersz <= 0 or kolumna <= 0 or wiersz > max_bard_size or kolumna > max_bard_size:
             raise KeyError
-        if bomby <= wiersz*kolumna:
-            self._bomby = bomby
         self.lista_ob = lista_o
         self._outcome = False
         self._wiersz = wiersz
@@ -87,11 +83,13 @@ class Play_board:
         self._bomby = bomby
         self._usedF = 0
         self._win = None
-        with open(URL["Board"], "r") as file_with_board:
+        self._plik_z_plansza = plik_z_plansza
+        self._plik_z_danymi = plik_z_danymi
+        with open(plik_z_danymi, "r") as file_with_board:
             self._board = json.load(file_with_board)
         if New_game:
             self.make_play_board()
-        with open(URL["Play_Board"], "r") as file_with_play_board:
+        with open(plik_z_plansza, "r") as file_with_play_board:
             self._new_board = json.load(file_with_play_board)
 
     def print_raw_map_raw(self):
@@ -122,7 +120,7 @@ class Play_board:
             for j in range(0, self._koluma):
                 wiersze.append(self.lista_ob[11])
             new_board[i] = wiersze
-        with open(URL["Play_Board"], "w") as file_with_board:
+        with open(self._plik_z_plansza, "w") as file_with_board:
             json.dump(new_board, file_with_board)
         return
 
@@ -131,7 +129,7 @@ class Play_board:
             self.left_click(wiersz, kolumna)
         if mouse_button == "p":
             self.right_click(wiersz, kolumna)
-        with open(URL["Play_Board"], "w") as file_with_board:
+        with open(self._plik_z_plansza, "w") as file_with_board:
             json.dump(self._new_board, file_with_board)
         if self._outcome is False:
             self.you_win()
@@ -180,6 +178,7 @@ class Play_board:
                                         self.change_cell(i, j, self.lista_ob[0])
                                     else:
                                         self.change_cell(i, j, self.lista_ob[wartosc])
+        self.you_win()
         return
 
     def you_win(self):
@@ -199,19 +198,35 @@ class Play_board:
 
 def main():
     lista_obrazkow = [" ", "1", "2", "3", "4", "5", "6", "7", "8", "B", "F", "X"]
-    wiersze = 3
+    URL = {
+    "Board": "board.json",
+    "Play_Board": "play_board.json"
+    }
+    Our_board_file = str(input("Write our_board_file : "))
+    Our_game_board_file = str(input("Write our_board_file : "))
+    try:
+        with open(Our_board_file):
+            pass
+    except IOError:
+        Our_board_file = URL["Board"]
+    try:
+        with open(Our_game_board_file):
+            pass
+    except IOError:
+        Our_game_board_file = URL["Play_Board"]
+    new_game = int(input("New_game?:\nYes - 1, No - Any other button\n"))
+    wiersze = 4
     kolumny = 3
-    bomny = 1
-    new_game = input("New_game?")
-    if new_game == '1':
-        mapa = Dict(wiersze, kolumny, bomny)
-        a = Play_board(wiersze, kolumny, bomny, lista_obrazkow)
+    bomny = 5
+    if new_game == 1:
+        mapa = Dict(wiersze, kolumny, bomny, Our_board_file)
+        a = Play_board(wiersze, kolumny, bomny, Our_game_board_file, Our_board_file, lista_obrazkow)
     else:
-        a = Play_board(wiersze, kolumny, bomny, lista_obrazkow, False)
+        a = Play_board(wiersze, kolumny, bomny, Our_game_board_file, Our_board_file, lista_obrazkow, False)
     a.print_raw_map_raw()
     a.print_map_raw()
     while a._outcome is False:
-        myszka = input("myszka: ")
+        myszka = input("myszka:\nl - lewy przycisk, p - prawy przycisk\n")
         wiersz = int(input("wiersz: "))
         kolumna = int(input("kolumna: "))
         if wiersz >= 0 and wiersz <= wiersze and kolumna >= 0 and kolumna <= kolumny:
@@ -227,3 +242,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
